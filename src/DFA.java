@@ -6,7 +6,13 @@ public class DFA {
 	private static String [] states, alphabet, endStates;
 	private static String [][] transitions;
 	private static String startState;
-
+	public DFA (String [] newEndStates,DFA otherDFA){
+		states=otherDFA.getStates();
+		alphabet=otherDFA.getAlphabet();
+		transitions=otherDFA.getTransitions();
+		startState=otherDFA.getStartState();
+		endStates=newEndStates;
+	}
 	public static void main (String [] args){
 		if(args.length==0 || args.length>1) {
 			System.err.println("A file name must be input.");
@@ -18,7 +24,11 @@ public class DFA {
 			System.out.println("States: "+printStrArray(states));
 			System.out.println("Alphabet: "+printStrArray(alphabet));
 			System.out.println("Transitions: "+printStrArray(transitions));
+			//DFA m = new DFA(findNewEnds(),);
 		}
+	}
+	private static void findNewEnds() {
+
 	}
 
 	private static void loadFile(String filename){
@@ -63,6 +73,14 @@ public class DFA {
 		return temp.toString();
 	}
 
+	private static String [] getEndStates(){
+		return endStates;
+	}
+
+	private static String [] getStates(){
+		return states;
+	}
+
 	private static String printStrArray(String [][] strArray){
 		StringBuilder temp=new StringBuilder();
 		for(int i = 0;i < strArray.length;i++){
@@ -89,10 +107,6 @@ public class DFA {
 
 	private static String getStartState(){
 		return startState;
-	}
-
-	private static String [] getEndStates(){
-		return endStates;
 	}
 
 }
