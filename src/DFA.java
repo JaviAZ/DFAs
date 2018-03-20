@@ -1,27 +1,24 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.lang.StringBuilder;
+
 public class DFA {
-	private static String [] states, alphabet, endStates;
-	private static String [][] transitions;
-	private static String startState;
+	private String [] states, alphabet, endStates;
+	private String [][] transitions;
+	private String startState;
 
-	public static void main (String [] args){
-		if(args.length==0 || args.length>1) {
-			System.err.println("A file name must be input.");
-			System.err.println("For example: ");
-			System.err.println("    java DFA D1.txt");
-		} else {
-			String filename=args[0];
-			loadFile(filename);
-			System.out.println("States: "+printStrArray(states));
-			System.out.println("Alphabet: "+printStrArray(alphabet));
-			System.out.println("Transitions: "+printStrArray(transitions));
-		}
+	public DFA () { }
+	public DFA (String [] newEndStates,DFA otherDFA){
+		setStates(otherDFA.getStates());
+		setAlphabet(otherDFA.getAlphabet());
+		setTransitions(otherDFA.getTransitions());
+		setStartState(otherDFA.getStartState());
+		setEndStates(newEndStates);
 	}
-
-	private static void loadFile(String filename){
+	public DFA (String filename) {
 		File file = new File(filename);
 		try {
 			Scanner sc = new Scanner(file);
@@ -52,47 +49,88 @@ public class DFA {
 		}
 	}
 
-	private static String printStrArray(String [] strArray){
-		StringBuilder temp=new StringBuilder();
-		for(int i = 0;i < strArray.length;i++){
-			if(i>0 && i<strArray.length){
-				temp.append(", ");
-			}
-			temp.append(strArray[i]);
-		}
-		return temp.toString();
+	public String [] getEndStates(){
+		return endStates;
+	}
+	public void setEndStates(String [] newEndStates) {
+		endStates=newEndStates;
 	}
 
-	private static String printStrArray(String [][] strArray){
-		StringBuilder temp=new StringBuilder();
-		for(int i = 0;i < strArray.length;i++){
-			for(int j = 0;j < strArray[i].length;j++){
-				temp.append(strArray[i][j]);
-				if(j<strArray[i].length-1){
+	public String [] getStates(){
+		return states;
+	}
+	public void setStates(String [] newStates) {
+		states=newStates;
+	}
+
+	public String [] getAlphabet(){
+		return alphabet;
+	}
+	public void setAlphabet(String [] newAlphabet) {
+		alphabet=newAlphabet;
+	}
+
+	public String [][] getTransitions(){
+		return transitions;
+	}
+	public void setTransitions(String [][] newTransitions) {
+		transitions=newTransitions;
+	}
+
+	public String getStartState(){
+		return startState;
+	}
+	public void setStartState(String newStartStates) {
+		startState=newStartStates;
+	}
+
+	public String getEncoding() {
+		StringBuilder temp = new StringBuilder();
+		String returnString = "";
+		returnString+=states.length+"\n";
+		for(int i = 0;i < states.length;i++) {
+			temp.append(states[i]);
+			if(i<states.length-1){
+				temp.append(" ");
+			}
+		}
+		returnString+=temp.toString()+"\n";
+		returnString+=alphabet.length+"\n";
+		temp.delete(0,temp.length());
+		for(int i = 0;i < alphabet.length;i++) {
+			temp.append(alphabet[i]);
+			if(i<alphabet.length-1){
+				temp.append(" ");
+			}
+		}
+		temp.append("\n");
+		for(int i = 0;i < transitions.length;i++){
+			for(int j = 0;j < transitions[i].length;j++){
+				temp.append(transitions[i][j]);
+				if(j<transitions[i].length-1){
 					temp.append(" ");
 				}
 			}
-			if(i<strArray.length-1){
-				temp.append("; ");
+			if(i<transitions.length-1){
+				temp.append("\n");
 			}
 		}
-		return temp.toString();
+		returnString+=temp.toString()+"\n";
+		returnString+=startState+"\n";
+		returnString+=endStates.length+"\n";
+		temp.delete(0,temp.length());
+		for(int i = 0;i < endStates.length;i++) {
+			temp.append(endStates[i]);
+			if(i<endStates.length-1){
+				temp.append(" ");
+			}
+		}
+		returnString+=temp.toString();
+		return returnString;
 	}
 
-	private static String [] getAlphabet(){
-		return alphabet;
+	public int getStateIndex(String s) {
+		ArrayList<String> temp1 = new ArrayList <>(Arrays.asList(states));
+		return temp1.indexOf(s);
 	}
-
-	private static String [][] getTransitions(){
-		return transitions;
-	}
-
-	private static String getStartState(){
-		return startState;
-	}
-
-	private static String [] getEndStates(){
-		return endStates;
-	}
-
 }
