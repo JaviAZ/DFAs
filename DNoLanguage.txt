@@ -1,0 +1,13 @@
+6
+Ax Bz Ay Az By Bx
+2
+a b
+Bz Ay
+Ay Bz
+Bz Az
+By Az
+Az Bz
+Ax Ay
+Ax
+1
+Bx

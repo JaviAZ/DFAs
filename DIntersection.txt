@@ -1,0 +1,12 @@
+5
+Ax Bz Ay Az By
+2
+a b
+Bz Ay
+Ay Bz
+Bz Az
+By Az
+Az Bz
+Ax
+1
+By
