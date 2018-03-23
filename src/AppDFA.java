@@ -28,8 +28,7 @@ public class AppDFA {
 						System.out.println(SymDif.getEncoding());
 						break;
 					case 3:
-						DFA equiv = symmetricDifference(m, n);
-						if(equiv.getEndStates().size()==0) {
+						if(equivalence(m, n)) {
 							System.out.println("Equivalent.");
 						} else {
 							System.out.println("Not equivalent.");
@@ -236,5 +235,7 @@ public class AppDFA {
 	}
 
 	//Task 5
-
+	private static boolean equivalence(DFA m, DFA n) {
+		return (hasLanguage(symmetricDifference(m,n)).get(0).size()==0);
+	}
 }
