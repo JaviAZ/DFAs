@@ -4,6 +4,7 @@ import java.util.InputMismatchException;
 /*  Student number: C1628112
 	Student name: Javier Alcazar-Zafra
 	Deterministic finite automaton application
+	DFAs are input as arguments in the form of "filename.txt", user can choose to input either one or two DFAs
  */
 public class AppDFA {
 	public static void main (String [] args){
@@ -55,7 +56,7 @@ public class AppDFA {
 						printDFA(m);
 						break;
 					case 2:
-						DFA n = new DFA(findConjugateEnds(m), m);
+						DFA n = new DFA(findComplementEnds(m), m);
 						System.out.println("\nEncoding of conjugate: ");
 						System.out.println(n.getEncoding());
 						System.out.println("\nConjugate: ");
@@ -79,7 +80,7 @@ public class AppDFA {
 		}
 	}
 
-	private static String printArray(ArrayList <String> strArray){
+	private static String printArray(ArrayList <String> strArray) { //Transforms an ArrayList into a String for print out
 		StringBuilder temp=new StringBuilder();
 		for(int i = 0;i < strArray.size();i++){
 			if(i>0 && i<strArray.size()){
@@ -89,7 +90,7 @@ public class AppDFA {
 		}
 		return temp.toString();
 	}
-	private static String print2DArray(ArrayList <ArrayList<String>> strArray){
+	private static String print2DArray(ArrayList <ArrayList<String>> strArray) { //Transforms a 2D ArrayList into a String for print out
 		StringBuilder temp=new StringBuilder();
 		for(int i = 0;i < strArray.size();i++){
 			for(int j = 0;j < strArray.get(i).size();j++){
@@ -104,22 +105,35 @@ public class AppDFA {
 		}
 		return temp.toString();
 	}
-	private static void printDFA(DFA m) {
+	private static void printDFA(DFA m) { // Prints the DFA nicely
 		System.out.println("States: "+printArray(m.getStates()));
 		System.out.println("Alphabet: "+printArray(m.getAlphabet()));
 		System.out.println("Transitions: "+print2DArray(m.getTransitions()));
 		System.out.println("End states: "+printArray(m.getEndStates()));
 	}
-
+	private static int [] getSplitState(DFA m, DFA n, String tempState) { // Splits a state (combined of two states from two DFAs) and returns their respective position in the states ArrayLists in their DFAs
+		int t2Pos = 1;
+		int t1Index = m.getStates().indexOf(("" + tempState.substring(0,t2Pos)));
+		while(t1Index==-1) {
+			t2Pos++;
+			t1Index = m.getStates().indexOf(tempState.substring(0,t2Pos));
+		}
+		int t2Index = n.getStates().indexOf(("" + tempState.substring(t2Pos)));
+		while(t2Index==-1) {
+			t2Pos++;
+			t2Index = n.getStates().indexOf(tempState.substring(t2Pos));
+		}
+		return new int[]{t1Index,t2Index};
+	}
 	//Task 1
-	private static ArrayList <String> findConjugateEnds(DFA m) {
+	private static ArrayList <String> findComplementEnds(DFA m) { // Removes current end states from list of total states to get the complement
 		ArrayList<String> temp1 = new ArrayList <>(m.getStates());
 		temp1.removeAll(m.getEndStates());
 		return temp1;
 	}
 
 	//Task 2
-	private static DFA getIntersect(DFA m, DFA n) {
+	private static DFA getIntersect(DFA m, DFA n) { // Returns a DFA that consists of the intersection of two other DFAs
 		DFA x = new DFA();
 		ArrayList <String> tempStates = new ArrayList<>();
 		ArrayList <ArrayList<String>> tempTransitions = new ArrayList<>();
@@ -127,48 +141,34 @@ public class AppDFA {
 		ArrayList <String> tempAlphabet = new ArrayList<>();
 		for(int i = 0;i < m.getAlphabet().size();i++) {
 			if(n.getAlphabet().contains(m.getAlphabet().get(i))) {
-				tempAlphabet.add(m.getAlphabet().get(i));
+				tempAlphabet.add(m.getAlphabet().get(i)); // Create the intersection alphabet
 			}
 		}
-		if(tempAlphabet.size()==0) {
-			System.err.println("DFAs don't have any matches in their alphabets.");
+		if(tempAlphabet.size()==n.getAlphabet().size()) { // Exit if alphabets don't match since intersection is based on the assumption that they do
+			System.err.println("DFAs alphabets don't match.");
 			System.exit(1);
 		}
 		x.setAlphabet(tempAlphabet);
-		x.setStartState(m.getStartState() + n.getStartState());
-		tempStates.add(x.getStartState());
-		ArrayList <ArrayList<String>> t1 = m.getTransitions();
-		ArrayList <ArrayList<String>> t2 = n.getTransitions();
-		int t1Index, t2Index;
-		for(int i = 0;i<m.getStates().size()*n.getStates().size();i++) {
+		x.setStartState(m.getStartState() + n.getStartState()); // Set start state to the combination of both
+		tempStates.add(x.getStartState()); // Add start state to list of states
+		for(int i = 0;i<m.getStates().size()*n.getStates().size();i++) { // Adds both transitions and states at the same time
 			if (tempStates.size() > i) {
 				tempTransitions.add(new ArrayList<>());
 				for(int j = 0;j<x.getAlphabet().size();j++) {
-					int t1Pos = 0;
-					int t2Pos = 1;
-					t1Index = m.getStates().indexOf(("" + tempStates.get(i).substring(0,t1Pos)));
-					t2Index = n.getStates().indexOf(("" + tempStates.get(i).substring(t2Pos,tempStates.get(i).length())));
-					while(t1Index==-1) {
-						t1Pos++;
-						t1Index = m.getStates().indexOf(tempStates.get(i).substring(0,t1Pos));
-					}
-					while(t2Index==-1) {
-						t2Pos++;
-						t2Index = n.getStates().indexOf(tempStates.get(i).substring(t2Pos,tempStates.get(i).length()));
-					}
-					String newState = t1.get(t1Index).get(j) + t2.get(t2Index).get(j);
+					int [] splitState = getSplitState(m,n,tempStates.get(i));
+					String newState = m.getTransitions().get(splitState[0]).get(j) + n.getTransitions().get(splitState[1]).get(j);
 					if (!tempStates.contains(newState)) {
-						tempStates.add(newState);
+						tempStates.add(newState); // If state hasn't been discovered yet, add it
 					}
-					tempTransitions.get(i).add(newState);
+					tempTransitions.get(i).add(newState); // Add transition
 				}
 			}
 		}
-		for(int i = 0;i < m.getEndStates().size();i++) {
+		for(int i = 0;i < m.getEndStates().size();i++) { // Mix up end states from both DFA
 			for(int j = 0;j < n.getEndStates().size();j++) {
 				ArrayList <String> mEnd = m.getEndStates();
 				ArrayList <String> nEnd = n.getEndStates();
-				if(tempStates.contains(mEnd.get(i)+nEnd.get(j))) {
+				if(tempStates.contains(mEnd.get(i)+nEnd.get(j))) { // Making sure they are in the states ArrayList previously made to avoid unreachable states
 					tempEndStates.add(mEnd.get(i)+nEnd.get(j));
 				}
 			}
@@ -179,15 +179,16 @@ public class AppDFA {
 		return x;
 	}
 
-	//Task 3
+	//Task 3     (S* ∩ T) U (S ∩ T*)    =     (S ∩ T)*    Asterisk symbolises complementation
 	private static DFA symmetricDifference(DFA m, DFA n) {
-		DFA mn = getIntersect(m, n);
-		ArrayList <String> conjugateEnds = new ArrayList <>(findConjugateEnds(mn));
-		ArrayList <String> mEnd = m.getEndStates();
-		ArrayList <String> nEnd = n.getEndStates();
-		for(int i = 0;i < conjugateEnds.size();i++) {
-			if(!mEnd.contains(conjugateEnds.get(i).charAt(0)+"") && !nEnd.contains(conjugateEnds.get(i).charAt(1)+"")){
-				conjugateEnds.remove(i);
+		DFA mn = getIntersect(m, n); // Find intersect of DFAs
+		ArrayList <String> conjugateEnds = new ArrayList <>(findComplementEnds(mn)); // Find complement ends
+		ArrayList <String> mEnd = m.getEndStates(); // Find ms' end states
+		ArrayList <String> nEnd = n.getEndStates(); // Find ns' end states
+		for(int i = 0;i < conjugateEnds.size();i++) { // Iterate through conjugate ends to see if they appear in both DFAs
+			int [] splitState = getSplitState(m,n,conjugateEnds.get(i));
+			if(!mEnd.contains(m.getStates().get(splitState[0])+"") && !nEnd.contains(n.getStates().get(splitState[1])+"")){
+				conjugateEnds.remove(i); // If they exist in both delete them
 				i--;
 			}
 		}
@@ -197,45 +198,45 @@ public class AppDFA {
 	//Task 4
 	private static ArrayList <ArrayList <String>> hasLanguage (DFA m) {
 		String currState = m.getStartState();
-		ArrayList <ArrayList <String>> visitedAndLanguage = new ArrayList<>();
-
+		ArrayList <ArrayList <String>> visitedAndLanguage = new ArrayList<>(); // Create ArrayList containing visited states and language
 		visitedAndLanguage.add(new ArrayList<>());
 		visitedAndLanguage.add(new ArrayList<>());
 		visitedAndLanguage.get(0).add(currState);
-		if(m.getEndStates().contains(currState)) {
+		if(m.getEndStates().contains(currState)) { // If initial state is an end state return it
+			visitedAndLanguage.get(1).add("Initial state is an end state.");
 			return visitedAndLanguage;
 		}else {
-			visitedAndLanguage = recursiveHasLanguage(m, currState, visitedAndLanguage);
-			if (!m.getEndStates().contains(visitedAndLanguage.get(0).get(visitedAndLanguage.get(0).size()-1))) {
+			visitedAndLanguage = recursiveDFS(m, currState, visitedAndLanguage); // Call recursive DFS
+			if (!m.getEndStates().contains(visitedAndLanguage.get(0).get(visitedAndLanguage.get(0).size()-1))) { // If last visited state isn't an end state, empty the language and visited states
 				visitedAndLanguage.get(0).removeAll(visitedAndLanguage.get(0));
 				visitedAndLanguage.get(1).removeAll(visitedAndLanguage.get(1));
 			}
-			return visitedAndLanguage;
+			return visitedAndLanguage; // return empty ArrayLists
 		}
 	}
-	private static ArrayList <ArrayList <String>> recursiveHasLanguage (DFA m, String currState, ArrayList <ArrayList<String>> visitedAndLanguage) {
+	private static ArrayList <ArrayList <String>> recursiveDFS(DFA m, String currState, ArrayList <ArrayList<String>> visitedAndLanguage) {
 		ArrayList <String> endStates = m.getEndStates();
 		ArrayList <String> currTrans = m.getTransitions().get(m.getStates().indexOf(currState));
-		for(int i = 0;i < m.getAlphabet().size();i++) {
+		for(int i = 0;i < m.getAlphabet().size();i++) { // Iterate through alphabet to get transitions
 			currState = currTrans.get(i);
-			if(!visitedAndLanguage.get(0).contains(currState)) {
-				visitedAndLanguage.get(0).add(currState);
-				visitedAndLanguage.get(1).add(m.getAlphabet().get(i));
+			if(!visitedAndLanguage.get(0).contains(currState)) { // Check if not visited
+				visitedAndLanguage.get(0).add(currState); // Add currState to list of visited
+				visitedAndLanguage.get(1).add(m.getAlphabet().get(i)); // Add alphabet to language
 				if (endStates.contains(currState)) {
-					return visitedAndLanguage;
+					return visitedAndLanguage; // Return ArrayList if currState is endState
 				} else {
-					recursiveHasLanguage(m, currState, visitedAndLanguage);
+					recursiveDFS(m, currState, visitedAndLanguage); // Call recursive method
 					if (endStates.contains(visitedAndLanguage.get(0).get(0))) {
-						return visitedAndLanguage;
+						return visitedAndLanguage; // Return ArrayList if last state in the visited states list is an end state
 					}
 				}
 			}
 		}
-		return visitedAndLanguage;
+		return visitedAndLanguage; // Return ArrayList as it is
 	}
 
 	//Task 5
-	private static boolean equivalence(DFA m, DFA n) {
+	private static boolean equivalence(DFA m, DFA n) { // If symmetric difference doesn't have a language they are equivalent
 		return (hasLanguage(symmetricDifference(m,n)).get(0).size()==0);
 	}
 }

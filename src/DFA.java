@@ -1,11 +1,15 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.Arrays;
 import java.lang.StringBuilder;
-
+/*  Student number: C1628112
+	Student name: Javier Alcazar-Zafra
+	Deterministic finite automaton
+ */
 public class DFA {
 	private ArrayList <String> states = new ArrayList <>();
 	private ArrayList <String> alphabet = new ArrayList <>();
@@ -93,47 +97,19 @@ public class DFA {
 	}
 
 	String getEncoding() {
-		StringBuilder temp = new StringBuilder();
 		String returnString = "";
+		StringBuilder tempBuild = new StringBuilder();
 		returnString+=states.size()+"\n";
-		for(int i = 0;i < states.size();i++) {
-			temp.append(states.get(i));
-			if(i<states.size()-1){
-				temp.append(" ");
-			}
-		}
-		returnString+=temp.toString()+"\n";
+		returnString+= Arrays.toString(states.toArray()).replaceAll("[\\[\\],]","")+"\n";
 		returnString+=alphabet.size()+"\n";
-		temp.delete(0,temp.length());
-		for(int i = 0;i < alphabet.size();i++) {
-			temp.append(alphabet.get(i));
-			if(i<alphabet.size()-1){
-				temp.append(" ");
-			}
+		returnString+= Arrays.toString(alphabet.toArray()).replaceAll("[\\[\\],]","")+"\n";
+		for (ArrayList<String> transition : transitions) {
+			tempBuild.append(Arrays.toString(transition.toArray()).replaceAll("[\\[\\],]", "")).append("\n");
 		}
-		temp.append("\n");
-		for(int i = 0;i < transitions.size();i++){
-			for(int j = 0;j < transitions.get(i).size();j++){
-				temp.append(transitions.get(i).get(j));
-				if(j<transitions.get(i).size()-1){
-					temp.append(" ");
-				}
-			}
-			if(i<transitions.size()-1){
-				temp.append("\n");
-			}
-		}
-		returnString+=temp.toString()+"\n";
+		returnString+=tempBuild.toString();
 		returnString+=startState+"\n";
 		returnString+=endStates.size()+"\n";
-		temp.delete(0,temp.length());
-		for(int i = 0;i < endStates.size();i++) {
-			temp.append(endStates.get(i));
-			if(i<endStates.size()-1){
-				temp.append(" ");
-			}
-		}
-		returnString+=temp.toString();
+		returnString+= Arrays.toString(endStates.toArray()).replaceAll("[\\[\\],]","");
 		return returnString;
 	}
 }
